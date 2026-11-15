@@ -1,0 +1,15 @@
+{
+  "name": "trailerflix-api",
+  "version": "1.0.0",
+  "description": "API Trailerflix",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.2",
+    "sequelize": "^6.37.1"
+  }
+}
