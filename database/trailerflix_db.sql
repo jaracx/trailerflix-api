@@ -1,4 +1,3 @@
--- Crear y seleccionar la base de datos
 CREATE DATABASE IF NOT EXISTS trailerflix_db;
 USE trailerflix_db;
 
