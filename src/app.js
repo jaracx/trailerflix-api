@@ -7,23 +7,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// HTML de bienvenida en /
-app.get('/', (req, res) => {
-    res.send(`
-        <html>
-            <body>
-                <h1>🎬 API REST Trailerflix</h1>
-                <p>Servidor activo y conectado a la base de datos MySQL.</p>
-                <h3>Endpoints disponibles:</h3>
-                <ul>
-                    <li><code>GET /api/catalogo</code> - Catálogo completo</li>
-                    <li><code>GET /api/titulo/:title</code> - Búsqueda por título</li>
-                    <li><code>GET /api/categoria/:cat</code> - Filtrar por categoría</li>
-                </ul>
-            </body>
-        </html>
-    `);
-});
+// Servir la interfaz web estática desde la carpeta public
+app.use(express.static('public'));
 
 // Rutas principales
 app.use('/api', routes);

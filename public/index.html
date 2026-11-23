@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Demo visual de la API Trailerflix">
+  <title>Trailerflix | Catálogo</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="Ir al inicio">
+      <span class="brand-mark">T</span>
+      <span>TRAILERFLIX</span>
+    </a>
+
+    <nav class="nav-actions" aria-label="Navegación principal">
+      <button class="nav-button active" id="catalog-tab" type="button">Catálogo</button>
+      <button class="nav-button" id="architecture-tab" type="button">Arquitectura BD</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" id="catalog-view">
+      <div class="hero-content">
+        <p class="eyebrow">API REST · MySQL · Sequelize</p>
+        <h1>Encontrá tu próxima historia.</h1>
+        <p class="hero-description">Explorá series y películas desde el catálogo conectado a la base relacional de Trailerflix.</p>
+
+        <form class="search-form" id="search-form">
+          <label class="sr-only" for="title-search">Buscar por título</label>
+          <input id="title-search" type="search" placeholder="Buscar por título..." autocomplete="off">
+          <button type="submit">Buscar</button>
+        </form>
+
+        <div class="category-filters" aria-label="Filtrar por categoría">
+          <button class="filter-button active" type="button" data-category="Todas">Todas</button>
+          <button class="filter-button" type="button" data-category="Serie">Series</button>
+          <button class="filter-button" type="button" data-category="Película">Películas</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog-section">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Catálogo</p>
+          <h2 id="catalog-title">Todo el contenido</h2>
+        </div>
+        <span class="result-count" id="result-count"></span>
+      </div>
+
+      <div class="notice hidden" id="notice" role="alert"></div>
+      <div class="catalog-grid" id="catalog-grid" aria-live="polite"></div>
+
+      <nav class="pagination" id="pagination" aria-label="Paginación del catálogo">
+        <button id="previous-page" type="button">← Anterior</button>
+        <span id="page-indicator">Página 1 de 1</span>
+        <button id="next-page" type="button">Siguiente →</button>
+      </nav>
+    </section>
+
+    <section class="architecture hidden" id="architecture-view">
+      <div class="section-heading architecture-heading">
+        <div>
+          <p class="eyebrow">Modelo relacional</p>
+          <h2>Arquitectura de Base de Datos</h2>
+        </div>
+      </div>
+
+      <div class="architecture-summary">
+        <article class="diagram-node primary">
+          <h3>contenido</h3>
+          <p>id · titulo · sinopsis · temporadas · poster · trailer · id_categoria</p>
+        </article>
+
+        <article class="diagram-node">
+          <h3>categorias</h3>
+          <p>1:N con contenido</p>
+        </article>
+
+        <article class="diagram-node bridge">
+          <h3>contenido_generos</h3>
+          <p>id_contenido · id_genero</p>
+        </article>
+
+        <article class="diagram-node">
+          <h3>generos</h3>
+          <p>N:M con contenido</p>
+        </article>
+
+        <article class="diagram-node bridge">
+          <h3>contenido_actores</h3>
+          <p>id_contenido · id_actor</p>
+        </article>
+
+        <article class="diagram-node">
+          <h3>actores</h3>
+          <p>N:M con contenido</p>
+        </article>
+
+        <article class="diagram-node view-node">
+          <h3>vw_trailerflix</h3>
+          <p>LEFT JOIN · JOIN con tablas puente · GROUP_CONCAT</p>
+        </article>
+      </div>
+
+      <div class="architecture-key">
+        <article>
+          <span>1:N</span>
+          <h3>Categoría → Contenido</h3>
+          <p>Una categoría puede agrupar varios contenidos.</p>
+        </article>
+        <article>
+          <span>N:M</span>
+          <h3>Contenido ↔ Géneros</h3>
+          <p>Una producción puede tener varios géneros.</p>
+        </article>
+        <article>
+          <span>N:M</span>
+          <h3>Contenido ↔ Actores</h3>
+          <p>Un actor puede participar en varios contenidos.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
