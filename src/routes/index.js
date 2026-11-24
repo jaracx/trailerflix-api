@@ -67,4 +67,66 @@ router.get('/categoria/:cat', async (req, res, next) => {
     }
 });
 
+// 4. GET /api/reparto/:act - Buscar contenido por actor
+router.get('/reparto/:act', async (req, res, next) => {
+    try {
+        const { act } = req.params;
+        const resultados = await Contenido.findAll({
+            include: [
+                { model: Categoria, as: 'categoria', attributes: ['nombre'] },
+                { model: Genero, as: 'generos', attributes: ['nombre'], through: { attributes: [] } },
+                {
+                    model: Actor,
+                    as: 'actores',
+                    attributes: ['nombre_completo'],
+                    through: { attributes: [] },
+                    where: {
+                        nombre_completo: { [Op.like]: `%${act}%` }
+                    }
+                }
+            ]
+        });
+
+        if (resultados.length === 0) {
+            return res.status(404).json({
+                error: `No se encontró ningún contenido cuyo reparto coincida con: '${act}'`
+            });
+        }
+
+        res.json(resultados);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// 5. GET /api/trailer/:id - Obtener el tráiler de un contenido por ID
+router.get('/trailer/:id', async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const contenido = await Contenido.findByPk(id);
+
+        if (!contenido) {
+            return res.status(404).json({
+                error: `No existe ningún contenido con el id: '${id}'`
+            });
+        }
+
+        if (!contenido.trailer || contenido.trailer.trim() === '') {
+            return res.json({
+                id: contenido.id,
+                titulo: contenido.titulo,
+                mensaje: 'El tráiler no está disponible para este título.'
+            });
+        }
+
+        res.json({
+            id: contenido.id,
+            titulo: contenido.titulo,
+            trailer: contenido.trailer
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

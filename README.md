@@ -77,7 +77,11 @@ Esto resulta útil porque la API puede responder con una estructura unificada, s
 trailerflix-api/
 ├── database/
 │   ├── trailerflix_db.sql       # Esquema SQL completo, datos y vista
-│   └── trailerflix.json         # Dataset base utilizado para poblar la base
+│   └── trailerflix.json         # Dataset base utilizado para poblar la base de datos
+├── public/
+│   ├── index.html              # Interfaz web principal
+│   ├── styles.css              # Estilos de la demo visual
+│   └── app.js                  # Conexión del frontend con la API
 ├── src/
 │   ├── models/
 │   │   ├── Categoria.js
@@ -133,10 +137,12 @@ npm start
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/` | Página de bienvenida / estado del servidor |
-| GET | `/api/catalogo` | Devuelve el catálogo completo |
-| GET | `/api/titulo/:title` | Busca contenido por título |
-| GET | `/api/categoria/:cat` | Filtra contenido por categoría |
+| GET | `/` | Interfaz web del catálogo |
+| GET | `/api/catalogo` | Devuelve el catálogo completo con categoría, géneros y actores |
+| GET | `/api/titulo/:title` | Busca contenido por coincidencia parcial en el título |
+| GET | `/api/categoria/:cat` | Filtra contenido por coincidencia parcial en la categoría |
+| GET | `/api/reparto/:act` | Busca contenidos asociados a un actor o actriz |
+| GET | `/api/trailer/:id` | Devuelve el tráiler de un contenido por su ID |
 
 ---
 
@@ -158,6 +164,90 @@ GET /api/titulo/the crown
 
 ```bash
 GET /api/categoria/serie
+```
+
+### Buscar por actor
+
+```bash
+GET /api/reparto/benedict cumberbatch
+```
+
+### Obtener tráiler por ID
+
+```bash
+GET /api/trailer/123
+```
+
+### Buscar contenido por reparto
+
+```bash
+GET /api/reparto/ricardo darin
+```
+
+Ejemplo de respuesta:
+
+```json
+[
+  {
+    "id": 16,
+    "titulo": "Relatos Salvajes",
+    "sinopsis": "Seis historias independientes muestran a personas comunes que reaccionan ante situaciones injustas o absurdas.",
+    "temporadas": null,
+    "poster": "https://placehold.co/600x900/111827/FFFFFF?text=Relatos%20Salvajes",
+    "trailer": "https://www.youtube.com/results?search_query=Relatos+Salvajes+trailer+oficial",
+    "categoria": { "nombre": "Película" },
+    "generos": [
+      { "nombre": "Comedia" },
+      { "nombre": "Drama" },
+      { "nombre": "Suspenso" }
+    ],
+    "actores": [
+      { "nombre_completo": "Ricardo Darín" }
+    ]
+  }
+]
+```
+
+Si no se encuentra una coincidencia:
+
+```json
+{
+  "error": "No se encontró ningún contenido cuyo reparto coincida con: 'actor inexistente'"
+}
+```
+
+### Obtener el tráiler por ID
+
+```bash
+GET /api/trailer/1
+```
+
+Ejemplo de respuesta con tráiler disponible:
+
+```json
+{
+  "id": 1,
+  "titulo": "The Crown",
+  "trailer": "https://www.youtube.com/results?search_query=The+Crown+trailer+oficial"
+}
+```
+
+Si el contenido no tiene tráiler:
+
+```json
+{
+  "id": 5,
+  "titulo": "Gambito de Dama",
+  "mensaje": "El tráiler no está disponible para este título."
+}
+```
+
+Si el ID no existe:
+
+```json
+{
+  "error": "No existe ningún contenido con el id: '999'"
+}
 ```
 
 ---

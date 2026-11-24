@@ -4,6 +4,8 @@ const resultCount = document.getElementById('result-count');
 const catalogTitle = document.getElementById('catalog-title');
 const searchForm = document.getElementById('search-form');
 const titleSearch = document.getElementById('title-search');
+const actorSearchForm = document.getElementById('actor-search-form');
+const actorSearch = document.getElementById('actor-search');
 const filterButtons = document.querySelectorAll('.filter-button');
 const previousPageButton = document.getElementById('previous-page');
 const nextPageButton = document.getElementById('next-page');
@@ -93,7 +95,7 @@ function renderCurrentPage() {
     const seasons = item.temporadas ? `${item.temporadas} temporada${item.temporadas === 1 ? '' : 's'}` : 'Película';
     const poster = item.poster || placeholderPoster;
     const trailer = item.trailer
-      ? `<a class="trailer-button" href="${escapeHtml(item.trailer)}" target="_blank" rel="noopener noreferrer">▶ Ver trailer</a>`
+      ? `<button class="trailer-button" type="button" data-trailer-id="${item.id}">▶ Ver trailer</button>`
       : '';
 
     return `
@@ -163,6 +165,20 @@ searchForm.addEventListener('submit', (event) => {
   fetchCatalog(`/api/titulo/${encodeURIComponent(title)}`);
 });
 
+actorSearchForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const actorName = actorSearch.value.trim();
+
+  if (!actorName) {
+    catalogTitle.textContent = 'Todo el contenido';
+    fetchCatalog('/api/catalogo');
+    return;
+  }
+
+  catalogTitle.textContent = `Reparto: ${actorName}`;
+  fetchCatalog(`/api/reparto/${encodeURIComponent(actorName)}`);
+});
+
 filterButtons.forEach((button) => {
   button.addEventListener('click', () => {
     filterButtons.forEach((item) => item.classList.remove('active'));
@@ -196,6 +212,30 @@ architectureTab.addEventListener('click', () => {
   catalogView.classList.add('hidden');
   document.querySelector('.catalog-section').classList.add('hidden');
   architectureView.classList.remove('hidden');
+});
+
+catalogGrid.addEventListener('click', async (event) => {
+  const trailerButton = event.target.closest('[data-trailer-id]');
+  if (!trailerButton) return;
+
+  try {
+    const response = await fetch(`/api/trailer/${trailerButton.dataset.trailerId}`);
+    const payload = await response.json();
+
+    if (!response.ok) {
+      showNotice(payload.error || 'No se pudo obtener el tráiler.');
+      return;
+    }
+
+    if (payload.trailer) {
+      window.open(payload.trailer, '_blank', 'noopener,noreferrer');
+    } else {
+      showNotice(payload.mensaje || 'El tráiler no está disponible para este título.');
+    }
+  } catch (error) {
+    console.error(error);
+    showNotice('No se pudo consultar el tráiler.');
+  }
 });
 
 fetchCatalog('/api/catalogo');
