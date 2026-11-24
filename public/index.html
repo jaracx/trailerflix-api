@@ -16,6 +16,7 @@
 
     <nav class="nav-actions" aria-label="Navegación principal">
       <button class="nav-button active" id="catalog-tab" type="button">Catálogo</button>
+      <button class="nav-button" id="crud-tab" type="button">Demo CRUD</button>
       <button class="nav-button" id="architecture-tab" type="button">Arquitectura BD</button>
     </nav>
   </header>
@@ -64,6 +65,58 @@
         <span id="page-indicator">Página 1 de 1</span>
         <button id="next-page" type="button">Siguiente →</button>
       </nav>
+    </section>
+
+    <section class="crud hidden" id="crud-view">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Operaciones CRUD</p>
+          <h2>Probar la API desde la interfaz</h2>
+        </div>
+      </div>
+
+      <div class="notice hidden" id="crud-notice" role="alert"></div>
+
+      <div class="crud-grid">
+        <form class="crud-card" id="create-form">
+          <h3>Crear contenido</h3>
+          <input name="titulo" placeholder="Título" required>
+          <textarea name="sinopsis" placeholder="Sinopsis" required></textarea>
+          <input name="temporadas" type="number" min="0" placeholder="Temporadas">
+          <input name="poster" placeholder="URL del poster" required>
+          <input name="trailer" placeholder="URL del tráiler" required>
+          <input name="id_categoria" type="number" min="1" placeholder="ID categoría" required>
+          <input name="generos" placeholder="IDs géneros: 1,2">
+          <input name="actores" placeholder="IDs actores: 1,2">
+          <button type="submit">Crear con POST</button>
+        </form>
+
+        <form class="crud-card" id="update-form">
+          <h3>Actualizar contenido</h3>
+          <input name="id" type="number" min="1" placeholder="ID del contenido" required>
+          <input name="titulo" placeholder="Nuevo título">
+          <textarea name="sinopsis" placeholder="Nueva sinopsis"></textarea>
+          <input name="temporadas" type="number" min="0" placeholder="Nuevas temporadas">
+          <input name="poster" placeholder="Nueva URL del poster">
+          <input name="trailer" placeholder="Nueva URL del tráiler">
+          <input name="id_categoria" type="number" min="1" placeholder="Nuevo ID categoría">
+          <input name="generos" placeholder="IDs géneros: 1,2">
+          <input name="actores" placeholder="IDs actores: 1,2">
+          <button type="submit">Actualizar con PUT</button>
+        </form>
+
+        <form class="crud-card" id="delete-form">
+          <h3>Eliminar contenido</h3>
+          <p class="crud-warning">Esta acción elimina el contenido y sus relaciones asociadas.</p>
+          <input name="id" type="number" min="1" placeholder="ID del contenido" required>
+          <button class="danger-button" type="submit">Eliminar con DELETE</button>
+        </form>
+      </div>
+
+      <article class="crud-result hidden" id="crud-result">
+        <h3>Respuesta de la API</h3>
+        <pre id="crud-result-body"></pre>
+      </article>
     </section>
 
     <section class="architecture hidden" id="architecture-view">
@@ -120,8 +173,7 @@
         <article>
           <span>N:M</span>
           <h3>Contenido ↔ Géneros</h3>
-          <p>Una producción puede tener varios géneros.</p>
-        </article>
+          <p>
         <article>
           <span>N:M</span>
           <h3>Contenido ↔ Actores</h3>

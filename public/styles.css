@@ -349,7 +349,22 @@ button { cursor: pointer; }
 .architecture-key h3 { margin: 12px 0 6px; font-size: 16px; }
 .architecture-key p { margin: 0; color: var(--muted); line-height: 1.5; font-size: 13px; }
 
-@media (max-width: 1050px) { .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.crud { padding: 44px clamp(20px, 5vw, 72px) 64px; min-height: calc(100vh - 72px); }
+.crud-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.crud-card { display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 18px; }
+.crud-card h3 { margin: 0 0 4px; }
+.crud-card input, .crud-card textarea { width: 100%; border: 1px solid var(--border); border-radius: 8px; background: rgba(255,255,255,.05); color: var(--text); padding: 11px 12px; outline: none; }
+.crud-card textarea { min-height: 86px; resize: vertical; }
+.crud-card input:focus, .crud-card textarea:focus { border-color: rgba(229,9,20,.75); }
+.crud-card button { height: 44px; border: 0; border-radius: 8px; background: var(--accent); color: white; font-weight: 800; }
+.crud-card button:hover { background: var(--accent-hover); }
+.crud-card .danger-button { background: #9d1f29; }
+.crud-warning { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.crud-result { margin-top: 18px; border: 1px solid var(--border); border-radius: 12px; background: #0d1016; padding: 18px; }
+.crud-result h3 { margin-top: 0; }
+.crud-result pre { margin: 0; white-space: pre-wrap; word-break: break-word; color: #d7dae0; }
+
+@media (max-width: 1050px) { .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .crud-grid { grid-template-columns: 1fr 1fr; } }
 
 @media (max-width: 760px) {
   .topbar { height: auto; min-height: 72px; align-items: flex-start; flex-direction: column; justify-content: center; gap: 6px; padding-top: 10px; padding-bottom: 10px; }

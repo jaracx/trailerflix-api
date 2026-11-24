@@ -14,6 +14,11 @@ const catalogView = document.getElementById('catalog-view');
 const architectureView = document.getElementById('architecture-view');
 const catalogTab = document.getElementById('catalog-tab');
 const architectureTab = document.getElementById('architecture-tab');
+const crudTab = document.getElementById('crud-tab');
+const crudView = document.getElementById('crud-view');
+const crudNotice = document.getElementById('crud-notice');
+const crudResult = document.getElementById('crud-result');
+const crudResultBody = document.getElementById('crud-result-body');
 
 const ITEMS_PER_PAGE = 8;
 let currentItems = [];
@@ -198,21 +203,20 @@ filterButtons.forEach((button) => {
   });
 });
 
-catalogTab.addEventListener('click', () => {
-  catalogTab.classList.add('active');
-  architectureTab.classList.remove('active');
-  catalogView.classList.remove('hidden');
-  document.querySelector('.catalog-section').classList.remove('hidden');
-  architectureView.classList.add('hidden');
-});
+function showView(viewName) {
+  catalogTab.classList.toggle('active', viewName === 'catalog');
+  crudTab.classList.toggle('active', viewName === 'crud');
+  architectureTab.classList.toggle('active', viewName === 'architecture');
 
-architectureTab.addEventListener('click', () => {
-  architectureTab.classList.add('active');
-  catalogTab.classList.remove('active');
-  catalogView.classList.add('hidden');
-  document.querySelector('.catalog-section').classList.add('hidden');
-  architectureView.classList.remove('hidden');
-});
+  catalogView.classList.toggle('hidden', viewName !== 'catalog');
+  document.querySelector('.catalog-section').classList.toggle('hidden', viewName !== 'catalog');
+  crudView.classList.toggle('hidden', viewName !== 'crud');
+  architectureView.classList.toggle('hidden', viewName !== 'architecture');
+}
+
+catalogTab.addEventListener('click', () => showView('catalog'));
+crudTab.addEventListener('click', () => showView('crud'));
+architectureTab.addEventListener('click', () => showView('architecture'));
 
 catalogGrid.addEventListener('click', async (event) => {
   const trailerButton = event.target.closest('[data-trailer-id]');
@@ -236,6 +240,94 @@ catalogGrid.addEventListener('click', async (event) => {
     console.error(error);
     showNotice('No se pudo consultar el tráiler.');
   }
+});
+
+function parseIdList(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.split(',').map((item) => Number(item.trim())).filter(Number.isInteger);
+}
+
+function showCrudResponse(payload) {
+  crudResult.classList.remove('hidden');
+  crudResultBody.textContent = JSON.stringify(payload, null, 2);
+}
+
+async function sendCrudRequest(url, options) {
+  crudNotice.classList.add('hidden');
+
+  try {
+    const response = await fetch(url, options);
+    const payload = await response.json();
+
+    if (!response.ok) {
+      crudNotice.textContent = payload.error || 'La operación no pudo completarse.';
+      crudNotice.classList.remove('hidden');
+    }
+
+    showCrudResponse({ status: response.status, ...payload });
+  } catch (error) {
+    console.error(error);
+    crudNotice.textContent = 'No se pudo conectar con la API.';
+    crudNotice.classList.remove('hidden');
+  }
+}
+
+document.getElementById('create-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const generos = parseIdList(form.get('generos') || '');
+  const actores = parseIdList(form.get('actores') || '');
+
+  const body = {
+    titulo: form.get('titulo'),
+    sinopsis: form.get('sinopsis'),
+    temporadas: form.get('temporadas') || null,
+    poster: form.get('poster'),
+    trailer: form.get('trailer'),
+    id_categoria: Number(form.get('id_categoria'))
+  };
+
+  if (generos !== undefined) body.generos = generos;
+  if (actores !== undefined) body.actores = actores;
+
+  sendCrudRequest('/api/catalogo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+});
+
+document.getElementById('update-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const id = form.get('id');
+  const generos = parseIdList(form.get('generos') || '');
+  const actores = parseIdList(form.get('actores') || '');
+  const body = {};
+
+  if (form.get('titulo')) body.titulo = form.get('titulo');
+  if (form.get('sinopsis')) body.sinopsis = form.get('sinopsis');
+  if (form.get('temporadas')) body.temporadas = Number(form.get('temporadas'));
+  if (form.get('poster')) body.poster = form.get('poster');
+  if (form.get('trailer')) body.trailer = form.get('trailer');
+  if (form.get('id_categoria')) body.id_categoria = Number(form.get('id_categoria'));
+  if (generos !== undefined) body.generos = generos;
+  if (actores !== undefined) body.actores = actores;
+
+  sendCrudRequest(`/api/catalogo/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+});
+
+document.getElementById('delete-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const form = new FormData(event.currentTarget);
+  const id = form.get('id');
+
+  sendCrudRequest(`/api/catalogo/${id}`, { method: 'DELETE' });
 });
 
 fetchCatalog('/api/catalogo');
