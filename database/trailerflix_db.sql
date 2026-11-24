@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `actores` (
 );
 
 CREATE TABLE IF NOT EXISTS `contenido` (
-	`id` int NOT NULL,
+	`id` int AUTO_INCREMENT NOT NULL,
 	`titulo` varchar(150) NOT NULL,
 	`sinopsis` text NOT NULL,
 	`temporadas` int,

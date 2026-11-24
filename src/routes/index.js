@@ -129,4 +129,174 @@ router.get('/trailer/:id', async (req, res, next) => {
     }
 });
 
+// 6. GET /api/catalogo/:id - Obtener un contenido por ID
+router.get('/catalogo/:id', async (req, res, next) => {
+    try {
+        const contenido = await Contenido.findByPk(req.params.id, {
+            include: [
+                { model: Categoria, as: 'categoria', attributes: ['nombre'] },
+                { model: Genero, as: 'generos', attributes: ['nombre'], through: { attributes: [] } },
+                { model: Actor, as: 'actores', attributes: ['nombre_completo'], through: { attributes: [] } }
+            ]
+        });
+
+        if (!contenido) {
+            return res.status(404).json({ error: 'Contenido no encontrado' });
+        }
+
+        res.json(contenido);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// 7. POST /api/catalogo - Crear un contenido
+router.post('/catalogo', async (req, res, next) => {
+    try {
+        const { titulo, sinopsis, temporadas, poster, trailer, id_categoria, generos, actores } = req.body;
+
+        if (!titulo || String(titulo).trim() === '') {
+            return res.status(400).json({ error: 'El campo titulo es obligatorio.' });
+        }
+        if (!sinopsis || String(sinopsis).trim() === '') {
+            return res.status(400).json({ error: 'El campo sinopsis es obligatorio.' });
+        }
+        if (!poster || String(poster).trim() === '') {
+            return res.status(400).json({ error: 'El campo poster es obligatorio.' });
+        }
+        if (!trailer || String(trailer).trim() === '') {
+            return res.status(400).json({ error: 'El campo trailer es obligatorio.' });
+        }
+        if (!Number.isInteger(Number(id_categoria))) {
+            return res.status(400).json({ error: 'El campo id_categoria debe ser un número entero válido.' });
+        }
+        if (temporadas !== undefined && temporadas !== null && temporadas !== '' && !Number.isInteger(Number(temporadas))) {
+            return res.status(400).json({ error: 'El campo temporadas debe ser numérico.' });
+        }
+        if (generos !== undefined && !Array.isArray(generos)) {
+            return res.status(400).json({ error: 'El campo generos debe ser un arreglo de IDs.' });
+        }
+        if (actores !== undefined && !Array.isArray(actores)) {
+            return res.status(400).json({ error: 'El campo actores debe ser un arreglo de IDs.' });
+        }
+
+        const categoria = await Categoria.findByPk(Number(id_categoria));
+        if (!categoria) {
+            return res.status(400).json({ error: `La categoría con id '${id_categoria}' no existe.` });
+        }
+
+        const contenido = await Contenido.create({
+            titulo: String(titulo).trim(),
+            sinopsis: String(sinopsis).trim(),
+            temporadas: temporadas !== undefined && temporadas !== null && temporadas !== '' ? Number(temporadas) : null,
+            poster: String(poster).trim(),
+            trailer: String(trailer).trim(),
+            id_categoria: Number(id_categoria)
+        });
+
+        if (Array.isArray(generos) && generos.length > 0) await contenido.setGeneros(generos);
+        if (Array.isArray(actores) && actores.length > 0) await contenido.setActores(actores);
+
+        const creado = await Contenido.findByPk(contenido.id, {
+            include: [
+                { model: Categoria, as: 'categoria', attributes: ['nombre'] },
+                { model: Genero, as: 'generos', attributes: ['nombre'], through: { attributes: [] } },
+                { model: Actor, as: 'actores', attributes: ['nombre_completo'], through: { attributes: [] } }
+            ]
+        });
+
+        res.status(201).json(creado);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// 8. PUT /api/catalogo/:id - Actualizar un contenido
+router.put('/catalogo/:id', async (req, res, next) => {
+    try {
+        const contenido = await Contenido.findByPk(req.params.id);
+
+        if (!contenido) {
+            return res.status(404).json({ error: 'Contenido no encontrado' });
+        }
+
+        const body = req.body;
+
+        if ('titulo' in body && (!body.titulo || String(body.titulo).trim() === '')) {
+            return res.status(400).json({ error: 'El campo titulo no puede quedar vacío.' });
+        }
+        if ('sinopsis' in body && (!body.sinopsis || String(body.sinopsis).trim() === '')) {
+            return res.status(400).json({ error: 'El campo sinopsis no puede quedar vacío.' });
+        }
+        if ('poster' in body && (!body.poster || String(body.poster).trim() === '')) {
+            return res.status(400).json({ error: 'El campo poster no puede quedar vacío.' });
+        }
+        if ('trailer' in body && (!body.trailer || String(body.trailer).trim() === '')) {
+            return res.status(400).json({ error: 'El campo trailer no puede quedar vacío.' });
+        }
+        if ('id_categoria' in body) {
+            if (!Number.isInteger(Number(body.id_categoria))) {
+                return res.status(400).json({ error: 'El campo id_categoria debe ser un número entero válido.' });
+            }
+            const categoria = await Categoria.findByPk(Number(body.id_categoria));
+            if (!categoria) {
+                return res.status(400).json({ error: `La categoría con id '${body.id_categoria}' no existe.` });
+            }
+        }
+        if ('temporadas' in body && body.temporadas !== null && body.temporadas !== '' && !Number.isInteger(Number(body.temporadas))) {
+            return res.status(400).json({ error: 'El campo temporadas debe ser numérico.' });
+        }
+        if ('generos' in body && !Array.isArray(body.generos)) {
+            return res.status(400).json({ error: 'El campo generos debe ser un arreglo de IDs.' });
+        }
+        if ('actores' in body && !Array.isArray(body.actores)) {
+            return res.status(400).json({ error: 'El campo actores debe ser un arreglo de IDs.' });
+        }
+
+        const datos = {};
+        if ('titulo' in body) datos.titulo = String(body.titulo).trim();
+        if ('sinopsis' in body) datos.sinopsis = String(body.sinopsis).trim();
+        if ('poster' in body) datos.poster = String(body.poster).trim();
+        if ('trailer' in body) datos.trailer = String(body.trailer).trim();
+        if ('id_categoria' in body) datos.id_categoria = Number(body.id_categoria);
+        if ('temporadas' in body) datos.temporadas = body.temporadas === null || body.temporadas === '' ? null : Number(body.temporadas);
+
+        await contenido.update(datos);
+
+        if ('generos' in body) await contenido.setGeneros(body.generos);
+        if ('actores' in body) await contenido.setActores(body.actores);
+
+        const actualizado = await Contenido.findByPk(contenido.id, {
+            include: [
+                { model: Categoria, as: 'categoria', attributes: ['nombre'] },
+                { model: Genero, as: 'generos', attributes: ['nombre'], through: { attributes: [] } },
+                { model: Actor, as: 'actores', attributes: ['nombre_completo'], through: { attributes: [] } }
+            ]
+        });
+
+        res.json(actualizado);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// 9. DELETE /api/catalogo/:id - Eliminar un contenido
+router.delete('/catalogo/:id', async (req, res, next) => {
+    try {
+        const contenido = await Contenido.findByPk(req.params.id);
+
+        if (!contenido) {
+            return res.status(404).json({ error: 'Contenido no encontrado' });
+        }
+
+        await contenido.setGeneros([]);
+        await contenido.setActores([]);
+        await contenido.destroy();
+
+        res.json({ message: 'Contenido eliminado correctamente' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 module.exports = router;

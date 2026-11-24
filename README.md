@@ -139,10 +139,14 @@ npm start
 |--------|------|-------------|
 | GET | `/` | Interfaz web del catálogo |
 | GET | `/api/catalogo` | Devuelve el catálogo completo con categoría, géneros y actores |
+| GET | `/api/catalogo/:id` | Devuelve un contenido por ID con sus relaciones |
 | GET | `/api/titulo/:title` | Busca contenido por coincidencia parcial en el título |
 | GET | `/api/categoria/:cat` | Filtra contenido por coincidencia parcial en la categoría |
 | GET | `/api/reparto/:act` | Busca contenidos asociados a un actor o actriz |
 | GET | `/api/trailer/:id` | Devuelve el tráiler de un contenido por su ID |
+| POST | `/api/catalogo` | Crea un contenido y permite asociar géneros y actores |
+| PUT | `/api/catalogo/:id` | Actualiza un contenido y sus asociaciones opcionales |
+| DELETE | `/api/catalogo/:id` | Elimina un contenido y limpia sus relaciones N:M |
 
 ---
 
@@ -184,61 +188,25 @@ GET /api/trailer/123
 GET /api/reparto/ricardo darin
 ```
 
-Ejemplo de respuesta:
-
-```json
-[
-  {
-    "id": 16,
-    "titulo": "Relatos Salvajes",
-    "sinopsis": "Seis historias independientes muestran a personas comunes que reaccionan ante situaciones injustas o absurdas.",
-    "temporadas": null,
-    "poster": "https://placehold.co/600x900/111827/FFFFFF?text=Relatos%20Salvajes",
-    "trailer": "https://www.youtube.com/results?search_query=Relatos+Salvajes+trailer+oficial",
-    "categoria": { "nombre": "Película" },
-    "generos": [
-      { "nombre": "Comedia" },
-      { "nombre": "Drama" },
-      { "nombre": "Suspenso" }
-    ],
-    "actores": [
-      { "nombre_completo": "Ricardo Darín" }
-    ]
-  }
-]
-```
-
-Si no se encuentra una coincidencia:
-
-```json
-{
-  "error": "No se encontró ningún contenido cuyo reparto coincida con: 'actor inexistente'"
-}
-```
-
-### Obtener el tráiler por ID
+### Obtener un contenido por ID
 
 ```bash
-GET /api/trailer/1
+GET /api/catalogo/1
 ```
 
-Ejemplo de respuesta con tráiler disponible:
+Respuesta exitosa:
 
 ```json
 {
   "id": 1,
   "titulo": "The Crown",
-  "trailer": "https://www.youtube.com/results?search_query=The+Crown+trailer+oficial"
-}
-```
-
-Si el contenido no tiene tráiler:
-
-```json
-{
-  "id": 5,
-  "titulo": "Gambito de Dama",
-  "mensaje": "El tráiler no está disponible para este título."
+  "sinopsis": "Recorre el reinado de Isabel II.",
+  "temporadas": 6,
+  "poster": "https://example.com/the-crown.jpg",
+  "trailer": "https://example.com/the-crown-trailer",
+  "categoria": { "nombre": "Serie" },
+  "generos": [{ "nombre": "Drama" }],
+  "actores": [{ "nombre_completo": "Claire Foy" }]
 }
 ```
 
@@ -246,7 +214,88 @@ Si el ID no existe:
 
 ```json
 {
-  "error": "No existe ningún contenido con el id: '999'"
+  "error": "Contenido no encontrado"
+}
+```
+
+### Crear un contenido
+
+```bash
+POST /api/catalogo
+Content-Type: application/json
+```
+
+Body de ejemplo:
+
+```json
+{
+  "titulo": "Nuevo contenido",
+  "sinopsis": "Descripción del nuevo contenido.",
+  "temporadas": 2,
+  "poster": "https://example.com/poster.jpg",
+  "trailer": "https://example.com/trailer",
+  "id_categoria": 1,
+  "generos": [1, 3],
+  "actores": [1, 2]
+}
+```
+
+Respuesta exitosa: `201 Created` con el contenido creado y sus relaciones.
+
+Ejemplo de validación:
+
+```json
+{
+  "error": "El campo titulo es obligatorio."
+}
+```
+
+### Actualizar un contenido
+
+```bash
+PUT /api/catalogo/1
+Content-Type: application/json
+```
+
+Body de ejemplo:
+
+```json
+{
+  "titulo": "The Crown - edición",
+  "temporadas": 6,
+  "generos": [1, 2]
+}
+```
+
+Respuesta exitosa: `200 OK` con el registro actualizado y sus relaciones.
+
+Si el ID no existe:
+
+```json
+{
+  "error": "Contenido no encontrado"
+}
+```
+
+### Eliminar un contenido
+
+```bash
+DELETE /api/catalogo/31
+```
+
+Respuesta exitosa:
+
+```json
+{
+  "message": "Contenido eliminado correctamente"
+}
+```
+
+Si el ID no existe:
+
+```json
+{
+  "error": "Contenido no encontrado"
 }
 ```
 
